@@ -12,6 +12,17 @@ This PHP application serves as a bridge between web chat widgets and Broca2 agen
 - **Real-time Chat**: Web widget with polling for responses
 - **Admin Monitoring**: Session management and statistics
 
+### 📋 Reference Implementation
+
+This project serves as a **reference implementation** for the PHP web chat bridge. The provided interface and UI are examples that can be customized or replaced entirely, as long as the API contract remains intact.
+
+**Key Points:**
+- **API Contract**: The REST API endpoints and data formats must remain unchanged
+- **UI Flexibility**: The web chat widget (`/web/chat.php`) and admin interface (`/web/admin.php`) can be completely redesigned
+- **Customization**: You can modify the frontend styling, layout, and user experience
+- **Integration**: Any custom UI must still communicate with the documented API endpoints
+- **Authentication**: API key and admin password requirements must be maintained
+
 ## 🏗️ Architecture
 
 ```
@@ -51,10 +62,20 @@ sanctum-web-chat/
 │       └── assets/
 │           ├── chat.js    # Frontend JavaScript
 │           └── style.css  # Chat widget styling
+├── plugin_web_chat/       # Broca2 Plugin (Complete Implementation)
+│   ├── plugin.py          # Main plugin class implementing Plugin interface
+│   ├── api_client.py      # HTTP client for PHP API communication
+│   ├── message_handler.py # Message processing and database integration
+│   ├── settings.py        # Configuration management with dataclass
+│   ├── test_plugin.py     # Full integration test
+│   ├── simple_test.py     # Basic functionality test
+│   ├── README.md          # Plugin documentation
+│   └── BUILD_SUMMARY.md   # Implementation summary
 ├── db/                    # Database files (outside public)
 │   └── web_chat.db       # SQLite database (auto-created)
 ├── docs/                  # Documentation
 │   ├── plugin-development.md
+│   ├── api-documentation.md
 │   └── project-plan.md
 └── README.md             # This file
 ```
@@ -290,6 +311,8 @@ The API includes comprehensive rate limiting:
 
 ## 🌐 Web Interfaces
 
+> **Note**: These interfaces are provided as **reference implementations**. You can customize or completely replace the UI while maintaining the same API contract.
+
 ### Chat Widget (`/web/chat.php`)
 
 A modern, responsive chat interface that users can access directly. Features:
@@ -308,6 +331,16 @@ A monitoring dashboard for administrators. Features:
 - Message and response statistics
 - Real-time updates
 - Session details
+
+### Customization Guidelines
+
+When creating custom interfaces:
+
+1. **Maintain API Contract**: Use the documented API endpoints exactly as specified
+2. **Authentication**: Implement the same Bearer token authentication
+3. **Error Handling**: Handle the same response formats and error codes
+4. **Rate Limiting**: Respect the same rate limiting headers and responses
+5. **CORS**: Ensure proper CORS configuration for cross-origin requests
 
 ## 📊 Monitoring
 
@@ -368,6 +401,99 @@ The SQLite database (`database/web_chat.db`) contains:
       "http://localhost:8080/api/v1/index.php?action=inbox"
     ```
 
+## 🤖 Broca2 Plugin
+
+This repository includes a complete Broca2 plugin implementation in the `plugin_web_chat/` directory. The plugin enables Broca2 agents to process web chat messages through a pull-based architecture.
+
+### Plugin Features
+
+- **Pull-based Architecture**: Plugin polls the PHP API for new messages
+- **User Management**: Automatically creates Broca2 users and platform profiles for web chat visitors
+- **Message Processing**: Integrates with Broca2's database and queue systems
+- **Session Management**: Tracks web chat sessions and maintains conversation context
+- **Error Handling**: Robust error handling with retry logic and exponential backoff
+- **Configuration**: Environment-based configuration with validation
+
+### Plugin Structure
+
+```
+plugin_web_chat/
+├── plugin.py              # Main plugin class implementing Plugin interface
+├── api_client.py          # HTTP client for PHP API communication
+├── message_handler.py     # Message processing and database integration
+├── settings.py            # Configuration management with dataclass
+├── test_plugin.py         # Full integration test
+├── simple_test.py         # Basic functionality test
+├── README.md              # Plugin documentation
+└── BUILD_SUMMARY.md       # Implementation summary
+```
+
+### Installation
+
+1. **Copy the plugin** to your Broca2 plugins directory:
+   ```bash
+   cp -r plugin_web_chat/ /path/to/broca2/plugins/web_chat/
+   ```
+
+2. **Set environment variables**:
+   ```bash
+   # Required
+   export WEB_CHAT_API_URL=http://localhost:8000
+   export WEB_CHAT_API_KEY=StableGeniu$
+   
+   # Optional (with defaults)
+   export WEB_CHAT_POLL_INTERVAL=5
+   export WEB_CHAT_MAX_RETRIES=3
+   export WEB_CHAT_RETRY_DELAY=10
+   export WEB_CHAT_PLUGIN_NAME=web_chat
+   export WEB_CHAT_PLATFORM_NAME=web_chat
+   ```
+
+3. **Test the plugin**:
+   ```bash
+   cd plugin_web_chat
+   python simple_test.py
+   ```
+
+### Plugin Configuration
+
+The plugin uses environment variables for configuration:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `WEB_CHAT_API_URL` | Yes | - | URL of the PHP web chat bridge |
+| `WEB_CHAT_API_KEY` | Yes | - | API key for authentication |
+| `WEB_CHAT_POLL_INTERVAL` | No | 5 | Polling interval in seconds |
+| `WEB_CHAT_MAX_RETRIES` | No | 3 | Maximum retry attempts |
+| `WEB_CHAT_RETRY_DELAY` | No | 10 | Delay between retries in seconds |
+| `WEB_CHAT_PLUGIN_NAME` | No | web_chat | Plugin name |
+| `WEB_CHAT_PLATFORM_NAME` | No | web_chat | Platform name |
+
+### How It Works
+
+1. **Startup**: Plugin automatically starts when Broca2 loads
+2. **Polling**: Continuously polls the PHP API for new messages
+3. **Processing**: Messages are processed through Broca2's agent system
+4. **Responses**: Agent responses are posted back to the web chat
+
+### Testing
+
+- **Basic Test**: `python simple_test.py` - Tests plugin structure and settings
+- **Full Test**: `python test_plugin.py` - Tests complete integration (requires Broca2 environment)
+
+### Documentation
+
+- **Plugin README**: `plugin_web_chat/README.md` - Complete plugin documentation
+- **Build Summary**: `plugin_web_chat/BUILD_SUMMARY.md` - Implementation details
+- **API Documentation**: `docs/api-documentation.md` - PHP API reference
+
+### Status
+
+✅ **Complete Implementation**: All core components are implemented and tested
+✅ **Broca2 Integration**: Follows Broca2 plugin patterns and interfaces
+✅ **Documentation**: Comprehensive documentation and examples
+⚠️ **Environment Setup**: Requires proper Broca2 environment for full testing
+
 3. **Test admin interface**:
    - Open `/web/admin.php`
    - Enter admin key when prompted
@@ -401,4 +527,14 @@ This is part of the Broca2 ecosystem. For questions or contributions:
 
 ## 📄 License
 
-This project is part of the Broca2 ecosystem and follows the same licensing terms. 
+This project is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License (CC-BY-SA 4.0).
+
+You are free to:
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material for any purpose, even commercially
+
+Under the following terms:
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made
+- **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original
+
+For more information, see: https://creativecommons.org/licenses/by-sa/4.0/ 
