@@ -5,7 +5,7 @@
 > **This repository has been graduated to Sanctum Core Module status!**
 > 
 > **For new development, please use the canonical source:**
-> **→ [(https://github.com/sanctumos/smcp)](https://github.com/sanctumos/broca-web-client) ←**
+> **→ [(https://github.com/sanctumos/broca-web-client)](https://github.com/sanctumos/broca-web-client) ←**
 > 
 > This repository remains available for users who prefer to continue using this version, but new features and updates will be developed in the official Sanctum repository.
 
